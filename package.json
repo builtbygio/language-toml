@@ -2,10 +2,14 @@
   "name": "language-toml",
   "version": "0.20.0",
   "description": "Syntax highlighting for Tom's Obvious, Minimal Language (TOML).",
-  "repository": "https://github.com/atom/language-toml",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/builtbygio/language-toml.git"
+  },
   "license": "MIT",
   "engines": {
-    "atom": "*"
+    "atom": "*",
+    "chevron": "*"
   },
   "devDependencies": {
     "coffeelint": "^1.10.1"
