@@ -1,15 +1,24 @@
 {
   "name": "language-toml",
-  "version": "0.20.0",
-  "description": "Syntax highlighting for Tom's Obvious, Minimal Language (TOML).",
+  "version": "0.21.0",
+  "description": "TOML language support in Chevron",
+  "keywords": [
+    "tree-sitter"
+  ],
   "repository": {
     "type": "git",
     "url": "https://github.com/builtbygio/language-toml.git"
   },
   "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/builtbygio/chevron/issues"
+  },
   "engines": {
     "atom": "*",
     "chevron": "*"
+  },
+  "dependencies": {
+    "@tree-sitter-grammars/tree-sitter-toml": "0.7.0"
   },
   "devDependencies": {
     "coffeelint": "^1.10.1"
