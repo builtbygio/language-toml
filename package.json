@@ -1,6 +1,6 @@
 {
   "name": "language-toml",
-  "version": "0.21.0",
+  "version": "0.22.0",
   "description": "TOML language support in Chevron",
   "keywords": [
     "tree-sitter"
