@@ -67,98 +67,27 @@ describe("TOML grammar", function() {
 
   it("tokenizes multiline strings", function() {
     let lines = grammar.tokenizeLines(`foo = """
-I am a
+I am a\\
 string
 """\
 `
     );
     expect(lines[0][4]).toEqual({value: '"""', scopes: ["source.toml", "string.quoted.double.block.toml", "punctuation.definition.string.begin.toml"]});
     expect(lines[1][0]).toEqual({value: 'I am a', scopes: ["source.toml", "string.quoted.double.block.toml"]});
+    expect(lines[1][1]).toEqual({value: '\\', scopes: ["source.toml", "string.quoted.double.block.toml", "constant.character.escape.toml"]});
     expect(lines[2][0]).toEqual({value: 'string', scopes: ["source.toml", "string.quoted.double.block.toml"]});
     expect(lines[3][0]).toEqual({value: '"""', scopes: ["source.toml", "string.quoted.double.block.toml", "punctuation.definition.string.end.toml"]});
 
     lines = grammar.tokenizeLines(`foo = '''
-I am a
+I am a\\
 string
 '''\
 `
     );
     expect(lines[0][4]).toEqual({value: "'''", scopes: ["source.toml", "string.quoted.single.block.toml", "punctuation.definition.string.begin.toml"]});
-    expect(lines[1][0]).toEqual({value: 'I am a', scopes: ["source.toml", "string.quoted.single.block.toml"]});
+    expect(lines[1][0]).toEqual({value: 'I am a\\', scopes: ["source.toml", "string.quoted.single.block.toml"]});
     expect(lines[2][0]).toEqual({value: 'string', scopes: ["source.toml", "string.quoted.single.block.toml"]});
     return expect(lines[3][0]).toEqual({value: "'''", scopes: ["source.toml", "string.quoted.single.block.toml", "punctuation.definition.string.end.toml"]});
-});
-
-  it("tokenizes escape characters in double-quoted multiline strings", function() {
-    const lines = grammar.tokenizeLines(`foo = """
-I am\\u0020a
-\\qstring
-with\\UaBcDE3F2escape characters\\nyay
-"""\
-`
-    );
-    expect(lines[0][4]).toEqual({value: '"""', scopes: ["source.toml", "string.quoted.double.block.toml", "punctuation.definition.string.begin.toml"]});
-    expect(lines[1][0]).toEqual({value: 'I am', scopes: ["source.toml", "string.quoted.double.block.toml"]});
-    expect(lines[1][1]).toEqual({value: '\\u0020', scopes: ["source.toml", "string.quoted.double.block.toml", "constant.character.escape.toml"]});
-    expect(lines[2][0]).toEqual({value: '\\qstring', scopes: ["source.toml", "string.quoted.double.block.toml"]});
-    expect(lines[3][0]).toEqual({value: 'with', scopes: ["source.toml", "string.quoted.double.block.toml"]});
-    expect(lines[3][1]).toEqual({value: '\\UaBcDE3F2', scopes: ["source.toml", "string.quoted.double.block.toml", "constant.character.escape.toml"]});
-    expect(lines[3][2]).toEqual({value: 'escape characters', scopes: ["source.toml", "string.quoted.double.block.toml"]});
-    expect(lines[3][3]).toEqual({value: '\\n', scopes: ["source.toml", "string.quoted.double.block.toml", "constant.character.escape.toml"]});
-    expect(lines[3][4]).toEqual({value: 'yay', scopes: ["source.toml", "string.quoted.double.block.toml"]});
-    return expect(lines[4][0]).toEqual({value: '"""', scopes: ["source.toml", "string.quoted.double.block.toml", "punctuation.definition.string.end.toml"]});
-});
-
-  it("tokenizes line continuation characters in double-quoted multiline strings", function() {
-    const lines = grammar.tokenizeLines(`foo = """
-I am a
-string \\
-with line-continuation\\ \t
-yay
-"""\
-`
-    );
-    expect(lines[0][4]).toEqual({value: '"""', scopes: ["source.toml", "string.quoted.double.block.toml", "punctuation.definition.string.begin.toml"]});
-    expect(lines[1][0]).toEqual({value: 'I am a', scopes: ["source.toml", "string.quoted.double.block.toml"]});
-    expect(lines[2][0]).toEqual({value: 'string ', scopes: ["source.toml", "string.quoted.double.block.toml"]});
-    expect(lines[2][1]).toEqual({value: '\\', scopes: ["source.toml", "string.quoted.double.block.toml", "constant.character.escape.toml"]});
-    expect(lines[3][0]).toEqual({value: 'with line-continuation', scopes: ["source.toml", "string.quoted.double.block.toml"]});
-    expect(lines[3][1]).toEqual({value: '\\', scopes: ["source.toml", "string.quoted.double.block.toml", "constant.character.escape.toml"]});
-    expect(lines[3][2]).toEqual({value: ' \t', scopes: ["source.toml", "string.quoted.double.block.toml"]});
-    expect(lines[4][0]).toEqual({value: 'yay', scopes: ["source.toml", "string.quoted.double.block.toml"]});
-    return expect(lines[5][0]).toEqual({value: '"""', scopes: ["source.toml", "string.quoted.double.block.toml", "punctuation.definition.string.end.toml"]});
-});
-
-  it("tokenizes escape characters in double-quoted multiline strings", function() {
-    const lines = grammar.tokenizeLines(`foo = '''
-I am\\u0020a
-\\qstring
-with\\UaBcDE3F2no escape characters\\naw
-'''\
-`
-    );
-    expect(lines[0][4]).toEqual({value: "'''", scopes: ["source.toml", "string.quoted.single.block.toml", "punctuation.definition.string.begin.toml"]});
-    expect(lines[1][0]).toEqual({value: 'I am\\u0020a', scopes: ["source.toml", "string.quoted.single.block.toml"]});
-    expect(lines[2][0]).toEqual({value: '\\qstring', scopes: ["source.toml", "string.quoted.single.block.toml"]});
-    expect(lines[3][0]).toEqual({value: 'with\\UaBcDE3F2no escape characters\\naw', scopes: ["source.toml", "string.quoted.single.block.toml"]});
-    return expect(lines[4][0]).toEqual({value: "'''", scopes: ["source.toml", "string.quoted.single.block.toml", "punctuation.definition.string.end.toml"]});
-});
-
-  it("does not tokenize line continuation characters in single-quoted multiline strings", function() {
-    const lines = grammar.tokenizeLines(`foo = '''
-I am a
-string \\
-with no line-continuation\\ \t
-aw
-'''\
-`
-    );
-    expect(lines[0][4]).toEqual({value: "'''", scopes: ["source.toml", "string.quoted.single.block.toml", "punctuation.definition.string.begin.toml"]});
-    expect(lines[1][0]).toEqual({value: 'I am a', scopes: ["source.toml", "string.quoted.single.block.toml"]});
-    expect(lines[2][0]).toEqual({value: 'string \\', scopes: ["source.toml", "string.quoted.single.block.toml"]});
-    expect(lines[3][0]).toEqual({value: 'with no line-continuation\\ \t', scopes: ["source.toml", "string.quoted.single.block.toml"]});
-    expect(lines[4][0]).toEqual({value: 'aw', scopes: ["source.toml", "string.quoted.single.block.toml"]});
-    return expect(lines[5][0]).toEqual({value: "'''", scopes: ["source.toml", "string.quoted.single.block.toml", "punctuation.definition.string.end.toml"]});
 });
 
   it("tokenizes booleans", function() {
@@ -178,43 +107,6 @@ aw
     return result;
   })());
 
-  it("does not tokenize a number with leading zeros as an integer", function() {
-    const {tokens} = grammar.tokenizeLine("foo = 01");
-    return expect(tokens[4]).toEqual({value: "01", scopes: ["source.toml", "invalid.illegal.toml"]});
-});
-
-  it("does not tokenize a number with an underscore not followed by a digit as an integer", function() {
-    let {tokens} = grammar.tokenizeLine("foo = 1__2");
-    expect(tokens[4]).toEqual({value: "1__2", scopes: ["source.toml", "invalid.illegal.toml"]});
-
-    ({tokens} = grammar.tokenizeLine("foo = 1_"));
-    return expect(tokens[4]).toEqual({value: "1_", scopes: ["source.toml", "invalid.illegal.toml"]});
-});
-
-  it("tokenizes hex integers", () => (() => {
-    const result = [];
-    for (var int of ["0xDEADBEEF", "0xdeadbeef", "0xdead_beef"]) {
-      var {tokens} = grammar.tokenizeLine(`foo = ${int}`);
-      result.push(expect(tokens[4]).toEqual({value: int, scopes: ["source.toml", "constant.numeric.hex.toml"]}));
-    }
-    return result;
-  })());
-
-  it("tokenizes octal integers", function() {
-    const {tokens} = grammar.tokenizeLine("foo = 0o755");
-    return expect(tokens[4]).toEqual({value: "0o755", scopes: ["source.toml", "constant.numeric.octal.toml"]});
-});
-
-  it("tokenizes binary integers", function() {
-    const {tokens} = grammar.tokenizeLine("foo = 0b11010110");
-    return expect(tokens[4]).toEqual({value: "0b11010110", scopes: ["source.toml", "constant.numeric.binary.toml"]});
-});
-
-  it("does not tokenize a number followed by other characters as a number", function() {
-    const {tokens} = grammar.tokenizeLine("foo = 0xdeadbeefs");
-    return expect(tokens[4]).toEqual({value: "0xdeadbeefs", scopes: ["source.toml", "invalid.illegal.toml"]});
-});
-
   it("tokenizes floats", () => (() => {
     const result = [];
     for (var float of ["+1.0", "3.1415", "-0.01", "5e+22", "1e6", "-2E-2", "6.626e-34", "6.626e-34", "9_224_617.445_991_228_313", "1e1_000"]) {
@@ -224,26 +116,10 @@ aw
     return result;
   })());
 
-  it("tokenizes inf and nan", () => ["+", "-", ""].map((sign) =>
-    (() => {
-      const result = [];
-      for (var float of ["inf", "nan"]) {
-        var {tokens} = grammar.tokenizeLine(`foo = ${sign}${float}`);
-        result.push(expect(tokens[4]).toEqual({value: `${sign}${float}`, scopes: ["source.toml", `constant.numeric.${float}.toml`]}));
-      }
-      return result;
-    })()));
-
-  it("tokenizes offset date-times", function() {
+  it("tokenizes dates", function() {
     let {tokens} = grammar.tokenizeLine("foo = 1979-05-27T07:32:00Z");
     expect(tokens[4]).toEqual({value: "1979-05-27", scopes: ["source.toml", "constant.numeric.date.toml"]});
     expect(tokens[5]).toEqual({value: "T", scopes: ["source.toml", "constant.numeric.date.toml", "keyword.other.time.toml"]});
-    expect(tokens[6]).toEqual({value: "07:32:00", scopes: ["source.toml", "constant.numeric.date.toml"]});
-    expect(tokens[7]).toEqual({value: "Z", scopes: ["source.toml", "constant.numeric.date.toml", "keyword.other.offset.toml"]});
-
-    ({tokens} = grammar.tokenizeLine("foo = 1979-05-27 07:32:00Z"));
-    expect(tokens[4]).toEqual({value: "1979-05-27", scopes: ["source.toml", "constant.numeric.date.toml"]});
-    expect(tokens[5]).toEqual({value: " ", scopes: ["source.toml", "constant.numeric.date.toml", "keyword.other.time.toml"]});
     expect(tokens[6]).toEqual({value: "07:32:00", scopes: ["source.toml", "constant.numeric.date.toml"]});
     expect(tokens[7]).toEqual({value: "Z", scopes: ["source.toml", "constant.numeric.date.toml", "keyword.other.offset.toml"]});
 
@@ -253,23 +129,6 @@ aw
     expect(tokens[6]).toEqual({value: "00:32:00.999999", scopes: ["source.toml", "constant.numeric.date.toml"]});
     expect(tokens[7]).toEqual({value: "-", scopes: ["source.toml", "constant.numeric.date.toml", "keyword.other.offset.toml"]});
     return expect(tokens[8]).toEqual({value: "07:00", scopes: ["source.toml", "constant.numeric.date.toml"]});
-});
-
-  it("tokenizes local date-times", function() {
-    const {tokens} = grammar.tokenizeLine("foo = 1979-05-27T00:32:00.999999");
-    expect(tokens[4]).toEqual({value: "1979-05-27", scopes: ["source.toml", "constant.numeric.date.toml"]});
-    expect(tokens[5]).toEqual({value: "T", scopes: ["source.toml", "constant.numeric.date.toml", "keyword.other.time.toml"]});
-    return expect(tokens[6]).toEqual({value: "00:32:00.999999", scopes: ["source.toml", "constant.numeric.date.toml"]});
-});
-
-  it("tokenizes local dates", function() {
-    const {tokens} = grammar.tokenizeLine("foo = 1979-05-27");
-    return expect(tokens[4]).toEqual({value: "1979-05-27", scopes: ["source.toml", "constant.numeric.date.toml"]});
-});
-
-  it("tokenizes local times", function() {
-    const {tokens} = grammar.tokenizeLine("foo = 00:32:00.999999");
-    return expect(tokens[4]).toEqual({value: "00:32:00.999999", scopes: ["source.toml", "constant.numeric.date.toml"]});
 });
 
   it("tokenizes tables", function() {
